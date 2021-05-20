@@ -39,18 +39,14 @@ describe('Custom parameter type', () => {
 
   describe('CucumberExpression', () => {
     it('throws exception for illegal character in parameter name', () => {
-      assert.throws(
-        () =>
-          new ParameterType('[string]', /.*/, String, (s) => s, false, true),
-        { message: "Illegal character '[' in parameter name {[string]}" }
-      )
+      assert.throws(() => new ParameterType('[string]', /.*/, String, (s) => s, false, true), {
+        message:
+          "Illegal character in parameter name {[string]}. Parameter names may not contain '{', '}', '(', ')', '\\' or '/'",
+      })
     })
 
     it('matches parameters with custom parameter type', () => {
-      const expression = new CucumberExpression(
-        'I have a {color} ball',
-        parameterTypeRegistry
-      )
+      const expression = new CucumberExpression('I have a {color} ball', parameterTypeRegistry)
       const value = expression.match('I have a red ball')[0].getValue(null)
       assert.strictEqual(value.name, 'red')
     })
@@ -69,8 +65,7 @@ describe('Custom parameter type', () => {
           'coordinate',
           /(\d+),\s*(\d+),\s*(\d+)/,
           Coordinate,
-          (x: string, y: string, z: string) =>
-            new Coordinate(Number(x), Number(y), Number(z)),
+          (x: string, y: string, z: string) => new Coordinate(Number(x), Number(y), Number(z)),
           true,
           true
         )
@@ -107,10 +102,7 @@ describe('Custom parameter type', () => {
           true
         )
       )
-      const expression = new CucumberExpression(
-        'I have a {color} ball',
-        parameterTypeRegistry
-      )
+      const expression = new CucumberExpression('I have a {color} ball', parameterTypeRegistry)
       const value = expression.match('I have a dark red ball')[0].getValue(null)
       assert.strictEqual(value.name, 'dark red')
     })
@@ -144,14 +136,7 @@ describe('Custom parameter type', () => {
         assert.throws(
           () =>
             parameterTypeRegistry.defineParameterType(
-              new ParameterType(
-                'color',
-                /.*/,
-                CssColor,
-                (s) => new CssColor(s),
-                false,
-                true
-              )
+              new ParameterType('color', /.*/, CssColor, (s) => new CssColor(s), false, true)
             ),
           { message: 'There is already a parameter type with name color' }
         )
@@ -159,14 +144,7 @@ describe('Custom parameter type', () => {
 
       it('is not detected for type', () => {
         parameterTypeRegistry.defineParameterType(
-          new ParameterType(
-            'whatever',
-            /.*/,
-            Color,
-            (s) => new Color(s),
-            false,
-            false
-          )
+          new ParameterType('whatever', /.*/, Color, (s) => new Color(s), false, false)
         )
       })
 
@@ -183,19 +161,13 @@ describe('Custom parameter type', () => {
         )
 
         assert.strictEqual(
-          new CucumberExpression(
-            'I have a {css-color} ball',
-            parameterTypeRegistry
-          )
+          new CucumberExpression('I have a {css-color} ball', parameterTypeRegistry)
             .match('I have a blue ball')[0]
             .getValue(null).constructor,
           CssColor
         )
         assert.strictEqual(
-          new CucumberExpression(
-            'I have a {css-color} ball',
-            parameterTypeRegistry
-          )
+          new CucumberExpression('I have a {css-color} ball', parameterTypeRegistry)
             .match('I have a blue ball')[0]
             .getValue(null).name,
           'blue'
@@ -231,10 +203,7 @@ describe('Custom parameter type', () => {
       )
       /// [add-async-parameter-type]
 
-      const expression = new CucumberExpression(
-        'I have a {asyncColor} ball',
-        parameterTypeRegistry
-      )
+      const expression = new CucumberExpression('I have a {asyncColor} ball', parameterTypeRegistry)
       const args = await expression.match('I have a red ball')
       const value = await args[0].getValue(null)
       assert.strictEqual(value.name, 'red')

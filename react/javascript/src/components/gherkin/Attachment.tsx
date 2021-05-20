@@ -1,5 +1,5 @@
 import React from 'react'
-import { messages } from '@cucumber/messages'
+import * as messages from '@cucumber/messages'
 import ErrorMessage from './ErrorMessage'
 import { faPaperclip } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Convert from 'ansi-to-html'
 
 interface IProps {
-  attachment: messages.IAttachment
+  attachment: messages.Attachment
 }
 
 const Attachment: React.FunctionComponent<IProps> = ({ attachment }) => {
@@ -30,10 +30,8 @@ const Attachment: React.FunctionComponent<IProps> = ({ attachment }) => {
   }
 }
 
-function image(attachment: messages.IAttachment) {
-  if (
-    attachment.contentEncoding !== messages.Attachment.ContentEncoding.BASE64
-  ) {
+function image(attachment: messages.Attachment) {
+  if (attachment.contentEncoding !== 'BASE64') {
     return (
       <ErrorMessage
         className="cucumber-attachment"
@@ -42,18 +40,19 @@ function image(attachment: messages.IAttachment) {
     )
   }
   return (
-    <img
-      alt="Embedded Image"
-      src={`data:${attachment.mediaType};base64,${attachment.body}`}
-      className="cucumber-attachment cucumber-attachment__image"
-    />
+    <details>
+      <summary>Attached Image</summary>
+      <img
+        alt="Embedded Image"
+        src={`data:${attachment.mediaType};base64,${attachment.body}`}
+        className="cucumber-attachment cucumber-attachment__image"
+      />
+    </details>
   )
 }
 
-function video(attachment: messages.IAttachment) {
-  if (
-    attachment.contentEncoding !== messages.Attachment.ContentEncoding.BASE64
-  ) {
+function video(attachment: messages.Attachment) {
+  if (attachment.contentEncoding !== 'BASE64') {
     return (
       <ErrorMessage
         className="cucumber-attachment"
@@ -62,10 +61,13 @@ function video(attachment: messages.IAttachment) {
     )
   }
   return (
-    <video controls>
-      <source src={`data:${attachment.mediaType};base64,${attachment.body}`} />
-      Your browser is unable to display video
-    </video>
+    <details>
+      <summary>Attached Video</summary>
+      <video controls>
+        <source src={`data:${attachment.mediaType};base64,${attachment.body}`} />
+        Your browser is unable to display video
+      </video>
+    </details>
   )
 }
 
@@ -82,32 +84,24 @@ function base64Decode(body: string) {
 }
 
 function text(
-  attachment: messages.IAttachment,
+  attachment: messages.Attachment,
   prettify: (body: string) => string,
   dangerouslySetInnerHTML: boolean
 ) {
   const body =
-    attachment.contentEncoding === messages.Attachment.ContentEncoding.IDENTITY
-      ? attachment.body
-      : base64Decode(attachment.body)
+    attachment.contentEncoding === 'IDENTITY' ? attachment.body : base64Decode(attachment.body)
 
   if (dangerouslySetInnerHTML) {
     return (
       <pre className="cucumber-attachment cucumber-attachment__text">
-        <FontAwesomeIcon
-          icon={faPaperclip}
-          className="cucumber-attachment__icon"
-        />
+        <FontAwesomeIcon icon={faPaperclip} className="cucumber-attachment__icon" />
         <span dangerouslySetInnerHTML={{ __html: prettify(body) }} />
       </pre>
     )
   }
   return (
     <pre className="cucumber-attachment cucumber-attachment__text">
-      <FontAwesomeIcon
-        icon={faPaperclip}
-        className="cucumber-attachment__icon"
-      />
+      <FontAwesomeIcon icon={faPaperclip} className="cucumber-attachment__icon" />
       {prettify(body)}
     </pre>
   )

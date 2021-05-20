@@ -1,27 +1,28 @@
 include default.mk
 
-FEATURE_FILES = $(wildcard testdata/*.feature)
-GHERKIN_DOCUMENT_NDJSON_FILES = $(patsubst testdata/%.feature,testdata/%.ndjson,$(FEATURE_FILES))
-ALL_NDJSON_FILE = testdata/all.ndjson
+FEATURE_FILES = $(sort $(wildcard ../../compatibility-kit/javascript/features/**/*.ndjson))
+TS_MESSAGE_FILES = $(patsubst ../../compatibility-kit/javascript/features/%.ndjson,acceptance/%.ts,$(FEATURE_FILES))
 
-.codegen: $(GHERKIN_DOCUMENT_NDJSON_FILES) $(ALL_NDJSON_FILE) dist/src/styles/cucumber-react.css
+.codegen: $(TS_MESSAGE_FILES) dist/src/styles/cucumber-react.css
 
 dist/src/styles/cucumber-react.css: src/styles/styles.scss src/styles/react-accessible-accordion.css
 	mkdir -p $(@D)
-	./node_modules/.bin/sass $< > $@
+	npx -y sass $< > $@
 	cat src/styles/react-accessible-accordion.css >> $@
 
-testdata/%.ndjson: testdata/%.feature testdata/step_definitions/steps.ts
-	./node_modules/@cucumber/fake-cucumber/bin/fake-cucumber --predictable-ids --format ndjson $< > $@
-
-$(ALL_NDJSON_FILE): $(FEATURE_FILES)
-	./node_modules/@cucumber/fake-cucumber/bin/fake-cucumber --predictable-ids --format ndjson $^ > $@
+# Convert an .ndjson file to a .ts file with Envelope objects that can be imported
+acceptance/%.ts: ../../compatibility-kit/javascript/features/%.ndjson Makefile
+	mkdir -p $(@D)
+	echo "// Generated file. Do not edit." > $@
+	echo "export default [" >> $@
+	cat $< | sed "s/$$/,/" >> $@
+	echo "]" >> $@
 
 .tested: .tested-storybook
 
 .tested-storybook: $(TYPESCRIPT_SOURCE_FILES)
-	./node_modules/.bin/build-storybook
+	npm run build-storybook
 	touch $@
 
 clean:
-	rm -f $(GHERKIN_DOCUMENT_NDJSON_FILES) $(ALL_NDJSON_FILE) $(ALL_PROTOBUF_FILE)
+	rm -f $(GHERKIN_DOCUMENT_NDJSON_FILES)

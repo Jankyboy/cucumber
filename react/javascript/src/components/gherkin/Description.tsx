@@ -1,6 +1,4 @@
 import React from 'react'
-import marked from 'marked'
-import sanitizeHtml from 'sanitize-html'
 import HighLight from '../app/HighLight'
 
 interface IProps {
@@ -8,16 +6,7 @@ interface IProps {
 }
 
 const Description: React.FunctionComponent<IProps> = ({ description }) => {
-  const html = marked(description)
-  const sanitizedHtml = sanitizeHtml(html)
-
-  return (
-    <HighLight
-      className="cucumber-description"
-      text={sanitizedHtml}
-      htmlText={true}
-    />
-  )
+  return <HighLight className="cucumber-description" text={description} markdown={true} />
 }
 
 export default Description

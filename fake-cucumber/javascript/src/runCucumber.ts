@@ -1,4 +1,4 @@
-import { Query as GherkinQuery } from '@cucumber/gherkin'
+import { Query as GherkinQuery } from '@cucumber/gherkin-utils'
 import GherkinQueryStream from './GherkinQueryStream'
 import makeTestPlan from './makeTestPlan'
 import { Readable, Writable } from 'stream'
@@ -11,12 +11,10 @@ export default async function runCucumber(
   gherkinEnvelopeStream: Readable,
   gherkinQuery: GherkinQuery,
   envelopeOutputStream: Writable,
-  makeTestPlanFn: MakeTestPlan = makeTestPlan
+  makeTestPlanFn: MakeTestPlan<SupportCode> = makeTestPlan
 ) {
   const gherkinQueryStream = new GherkinQueryStream(gherkinQuery)
-  gherkinEnvelopeStream
-    .pipe(gherkinQueryStream)
-    .pipe(envelopeOutputStream, { end: false })
+  gherkinEnvelopeStream.pipe(gherkinQueryStream).pipe(envelopeOutputStream, { end: false })
 
   await new Promise((resolve, reject) => {
     gherkinQueryStream.on('end', resolve)

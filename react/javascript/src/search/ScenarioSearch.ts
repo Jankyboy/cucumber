@@ -1,4 +1,4 @@
-import { messages } from '@cucumber/messages'
+import * as messages from '@cucumber/messages'
 import elasticlunr from 'elasticlunr'
 
 interface SearchableScenario {
@@ -14,12 +14,9 @@ export default class ScenarioSearch {
     ctx.addField('description')
     ctx.saveDocument(true)
   })
-  private scenarioById = new Map<
-    string,
-    messages.GherkinDocument.Feature.IScenario
-  >()
+  private scenarioById = new Map<string, messages.Scenario>()
 
-  public add(scenario: messages.GherkinDocument.Feature.IScenario): void {
+  public add(scenario: messages.Scenario): void {
     this.index.addDoc({
       id: scenario.id,
       name: scenario.name,
@@ -28,11 +25,11 @@ export default class ScenarioSearch {
     this.scenarioById.set(scenario.id, scenario)
   }
 
-  public search(query: string): messages.GherkinDocument.Feature.IScenario[] {
+  public search(query: string): messages.Scenario[] {
     const results = this.index.search(query, {
       fields: {
-        name: { bool: 'OR', expand: true, boost: 1 },
-        description: { bool: 'OR', expand: true, boost: 1 },
+        name: { bool: 'OR', boost: 1 },
+        description: { bool: 'OR', boost: 1 },
       },
     })
 

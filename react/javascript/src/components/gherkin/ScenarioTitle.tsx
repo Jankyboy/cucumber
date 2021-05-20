@@ -1,6 +1,5 @@
 import React from 'react'
-import { messages } from '@cucumber/messages'
-import IScenario = messages.GherkinDocument.Feature.IScenario
+import * as messages from '@cucumber/messages'
 import Keyword from './Keyword'
 import HighLight from '../app/HighLight'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -8,7 +7,7 @@ import { faLink } from '@fortawesome/free-solid-svg-icons'
 
 interface IProps {
   id: string
-  scenario: IScenario
+  scenario: messages.Scenario
 }
 
 const ScenarioTitle: React.FunctionComponent<IProps> = ({ id, scenario }) => {
@@ -18,9 +17,7 @@ const ScenarioTitle: React.FunctionComponent<IProps> = ({ id, scenario }) => {
         <FontAwesomeIcon icon={faLink} className="cucumber-anchor__icon" />
       </a>
       <h2 id={id}>
-        <Keyword className="cucumber-title__keyword">
-          {scenario.keyword}:
-        </Keyword>{' '}
+        <Keyword className="cucumber-title__keyword">{scenario.keyword}:</Keyword>{' '}
         <HighLight className="cucumber-title__text" text={scenario.name} />
       </h2>
     </div>

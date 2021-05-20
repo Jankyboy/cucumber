@@ -2,13 +2,13 @@ import React from 'react'
 import IdGenerator from '../../IdGenerator'
 import Description from './Description'
 import Scenario from './Scenario'
-import { messages } from '@cucumber/messages'
+import * as messages from '@cucumber/messages'
 import Background from './Background'
-import IRule = messages.GherkinDocument.Feature.FeatureChild.IRule
 import RuleTitle from './RuleTitle'
+import Tags from './Tags'
 
 interface IProps {
-  rule: IRule
+  rule: messages.Rule
 }
 
 const generator = new IdGenerator()
@@ -18,6 +18,7 @@ const Rule: React.FunctionComponent<IProps> = ({ rule }) => {
 
   return (
     <section className="cucumber-rule">
+      <Tags tags={rule.tags} />
       <RuleTitle id={idGenerated} rule={rule} />
       <div className="cucumber-children">
         <Description description={rule.description} />

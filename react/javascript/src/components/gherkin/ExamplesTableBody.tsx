@@ -1,5 +1,5 @@
 import React from 'react'
-import { messages } from '@cucumber/messages'
+import * as messages from '@cucumber/messages'
 import CucumberQueryContext from '../../CucumberQueryContext'
 import isNumber from './isNumber'
 import GherkinQueryContext from '../../GherkinQueryContext'
@@ -7,9 +7,10 @@ import ErrorMessage from './ErrorMessage'
 import statusName from './statusName'
 import StatusIcon from './StatusIcon'
 import UriContext from '../../UriContext'
+import { getWorstTestStepResult } from '@cucumber/messages'
 
 interface IProps {
-  rows: messages.GherkinDocument.Feature.ITableRow[]
+  rows: readonly messages.TableRow[]
 }
 
 const ExamplesTableBody: React.FunctionComponent<IProps> = ({ rows }) => {
@@ -23,7 +24,7 @@ const ExamplesTableBody: React.FunctionComponent<IProps> = ({ rows }) => {
 }
 
 interface IRowOrRows {
-  row: messages.GherkinDocument.Feature.ITableRow
+  row: messages.TableRow
 }
 
 const RowOrRows: React.FunctionComponent<IRowOrRows> = ({ row }) => {
@@ -31,10 +32,8 @@ const RowOrRows: React.FunctionComponent<IRowOrRows> = ({ row }) => {
   const cucumberQuery = React.useContext(CucumberQueryContext)
   const uri = React.useContext(UriContext)
 
-  const testStepResult = cucumberQuery.getWorstTestStepResult(
-    cucumberQuery.getPickleTestStepResults(
-      gherkinQuery.getPickleIds(uri, row.id)
-    )
+  const testStepResult = getWorstTestStepResult(
+    cucumberQuery.getPickleTestStepResults(gherkinQuery.getPickleIds(uri, row.id))
   )
   return (
     <>
@@ -52,17 +51,13 @@ const RowOrRows: React.FunctionComponent<IRowOrRows> = ({ row }) => {
           </td>
         ))}
       </tr>
-      <ErrorMessageRow
-        key="row-error"
-        testStepResult={testStepResult}
-        colSpan={row.cells.length}
-      />
+      <ErrorMessageRow key="row-error" testStepResult={testStepResult} colSpan={row.cells.length} />
     </>
   )
 }
 
 interface IErrorMessageRowProps {
-  testStepResult: messages.TestStepFinished.ITestStepResult
+  testStepResult: messages.TestStepResult
   colSpan: number
 }
 
@@ -72,11 +67,7 @@ const ErrorMessageRow: React.FunctionComponent<IErrorMessageRowProps> = ({
 }) => {
   if (!testStepResult.message) return null
   return (
-    <tr
-      className={`cucumber-status--${statusName(
-        testStepResult.status
-      )} cucumber-table__cell`}
-    >
+    <tr className={`cucumber-status--${statusName(testStepResult.status)} cucumber-table__cell`}>
       <td>&nbsp;</td>
       <td colSpan={colSpan}>
         <ErrorMessage message={testStepResult.message} />

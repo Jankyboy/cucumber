@@ -1,23 +1,21 @@
 import assert from 'assert'
-import { messages } from '@cucumber/messages'
+import * as messages from '@cucumber/messages'
 import { Query } from '@cucumber/query'
-import { Query as GherkinQuery } from '@cucumber/gherkin'
+import { Query as GherkinQuery } from '@cucumber/gherkin-utils'
 import fs from 'fs'
 
 import getFeatureStatus from '../src/getFeatureStatus'
 
-function pathToEnvelopes(path: string): messages.IEnvelope[] {
+function envelopesFrom(path: string): messages.Envelope[] {
   return fs
     .readFileSync(__dirname + '/' + path)
     .toString()
     .trim()
     .split('\n')
-    .map((json: string) => messages.Envelope.fromObject(JSON.parse(json)))
+    .map((json: string) => JSON.parse(json))
 }
 
-function getGherkinDocument(
-  envelopes: messages.IEnvelope[]
-): messages.IGherkinDocument {
+function getGherkinDocument(envelopes: messages.Envelope[]): messages.GherkinDocument {
   return envelopes.find((envelope) => envelope.gherkinDocument).gherkinDocument
 }
 
@@ -30,7 +28,7 @@ describe('getFeatureStatus', () => {
     gherkinQuery = new GherkinQuery()
   })
 
-  function readEnvelopes(envelopes: messages.IEnvelope[]): void {
+  function readEnvelopes(envelopes: messages.Envelope[]): void {
     envelopes.map((envelope) => {
       gherkinQuery.update(envelope)
       testResultsQuery.update(envelope)
@@ -38,24 +36,22 @@ describe('getFeatureStatus', () => {
   }
 
   it('returns PASSED for a feature where all scenarios passed', () => {
-    const envelopes = pathToEnvelopes('../testdata/parameter_types.ndjson')
+    const envelopes = envelopesFrom(
+      '../../../compatibility-kit/javascript/features/minimal/minimal.feature.ndjson'
+    )
     const document = getGherkinDocument(envelopes)
     readEnvelopes(envelopes)
 
-    assert.equal(
-      getFeatureStatus(document, testResultsQuery, gherkinQuery),
-      messages.TestStepFinished.TestStepResult.Status.PASSED
-    )
+    assert.strictEqual(getFeatureStatus(document, testResultsQuery, gherkinQuery), 'PASSED')
   })
 
   it('returns the worst status for a feature with multiple scenarios', () => {
-    const envelopes = pathToEnvelopes('../testdata/statuses.ndjson')
+    const envelopes = envelopesFrom(
+      '../../../compatibility-kit/javascript/features/stack-traces/stack-traces.feature.ndjson'
+    )
     const document = getGherkinDocument(envelopes)
     readEnvelopes(envelopes)
 
-    assert.equal(
-      getFeatureStatus(document, testResultsQuery, gherkinQuery),
-      messages.TestStepFinished.TestStepResult.Status.FAILED
-    )
+    assert.strictEqual(getFeatureStatus(document, testResultsQuery, gherkinQuery), 'FAILED')
   })
 })

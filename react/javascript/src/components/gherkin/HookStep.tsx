@@ -1,33 +1,28 @@
 import React from 'react'
-import { messages } from '@cucumber/messages'
+import * as messages from '@cucumber/messages'
 import CucumberQueryContext from '../../CucumberQueryContext'
 import ErrorMessage from './ErrorMessage'
 import StepContainer from './StepContainer'
 import Attachment from './Attachment'
+import { getWorstTestStepResult } from '@cucumber/messages'
 
 interface IProps {
-  step: messages.TestCase.ITestStep
+  step: messages.TestStep
 }
 
 const HookStep: React.FunctionComponent<IProps> = ({ step }) => {
   const cucumberQuery = React.useContext(CucumberQueryContext)
 
-  const stepResult = cucumberQuery.getWorstTestStepResult(
-    cucumberQuery.getTestStepResults(step.id)
-  )
+  const stepResult = getWorstTestStepResult(cucumberQuery.getTestStepResults(step.id))
 
   const hook = cucumberQuery.getHook(step.hookId)
   const attachments = cucumberQuery.getTestStepsAttachments([step.id])
 
-  if (
-    stepResult.status === messages.TestStepFinished.TestStepResult.Status.FAILED
-  ) {
+  if (stepResult.status === 'FAILED') {
     const location = hook.sourceReference.location
       ? hook.sourceReference.uri + ':' + hook.sourceReference.location.line
       : hook.sourceReference.javaMethod
-      ? hook.sourceReference.javaMethod.className +
-        '.' +
-        hook.sourceReference.javaMethod.methodName
+      ? hook.sourceReference.javaMethod.className + '.' + hook.sourceReference.javaMethod.methodName
       : 'Unknown location'
     return (
       <StepContainer status={stepResult.status}>

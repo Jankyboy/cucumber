@@ -17,6 +17,92 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [12.1.1] - 2021-04-06
+
+### Fixed
+
+* [Ruby] use `Array#select` instead of `Array#filter`. The latter is an alias that
+  was introduced in Ruby [2.6.0](https://github.com/ruby/ruby/blob/v2_6_0/NEWS#core-classes-updates-outstanding-ones-only-).
+  ([aslakhellesoy])
+
+## [12.1.0] - 2021-04-06
+
+### Added
+
+* [Ruby] Add `UndefinedParameterTypeError#undefined_parameter_type_name`
+  ([#1460](https://github.com/cucumber/cucumber/pull/1460)
+   [aslakhellesoy])
+
+## [12.0.1] - 2021-04-06
+
+### Fixed
+
+* [JavaScript] Fix issue with some files may not appear in published package
+  ([#1452](https://github.com/cucumber/cucumber/pull/1452))
+* [Java] Support character in BuiltInParameterTransformer.
+  ([#1405](https://github.com/cucumber/cucumber/issues/1405))
+
+## [12.0.0] - 2021-02-09
+
+### Changed
+
+* [JavaScript] removed circular dependencies.
+  ([#1292](https://github.com/cucumber/cucumber/pull/1292)
+   [davidjgoss]
+   [aslakhellesoy])
+
+## [11.0.2] - 2021-02-09
+
+### Fixed
+
+* [JavaScript] revert breaking changes in 11.0.1
+  ([#1352](https://github.com/cucumber/cucumber/issues/1352))
+
+## [11.0.1] - 2021-02-07
+
+### Fixed
+
+* [JavaScript] removed circular dependencies.
+  ([#1292](https://github.com/cucumber/cucumber/pull/1292)
+   [davidjgoss]
+   [aslakhellesoy])
+
+## [11.0.0] - 2020-12-10
+
+This is a major release of Cucumber Expressions.
+Cucumber Expressions now has a formal grammar.
+
+This grammar is implemented in a hand-written recursive-descent parser.
+The new grammar and parser handles edge cases better.
+
+Most existing expressions should still parse in the same way, but you may
+come across edge cases where the expressions are parsed differently.
+
+This work was a heroic effort by @mpkorstanje who has been working on and off
+on this for over a year!!
+
+### Added
+
+### Changed
+
+* Some expressions that were valid in previous versions may now be invalid
+* Some expressions that were invalid in previous versions may now be valid
+
+### Removed
+
+* [JavaScript] Removed webpacked JavaScript from distribution
+
+### Fixed
+
+* [Go, Java, JavaScript, Ruby] New handwritten parser, which fixes several long-standing bugs.
+  ([#601](https://github.com/cucumber/cucumber/issues/601)
+   [#726](https://github.com/cucumber/cucumber/issues/726)
+   [#767](https://github.com/cucumber/cucumber/issues/767)
+   [#770](https://github.com/cucumber/cucumber/issues/770)
+   [#771](https://github.com/cucumber/cucumber/pull/771)
+   [mpkorstanje])
+* [Go] Support for Go 1.15
+
 ## [10.3.0] - 2020-08-07
 
 ### Added
@@ -705,7 +791,13 @@ N/A
 * First stable release!
 
 <!-- Releases -->
-[Unreleased]: https://github.com/cucumber/cucumber/compare/cucumber-expressions/v10.3.0...master
+[Unreleased]: https://github.com/cucumber/cucumber/compare/cucumber-expressions/v12.1.1...master
+[12.1.1]:      https://github.com/cucumber/cucumber/compare/cucumber-expressions/v12.1.0...cucumber-expressions/v12.1.1
+[12.1.0]:      https://github.com/cucumber/cucumber/compare/cucumber-expressions/v12.0.1...cucumber-expressions/v12.1.0
+[12.0.1]:      https://github.com/cucumber/cucumber/compare/cucumber-expressions/v12.0.0...cucumber-expressions/v12.0.1
+[12.0.0]:      https://github.com/cucumber/cucumber/compare/cucumber-expressions/v11.0.1...cucumber-expressions/v12.0.0
+[11.0.1]:      https://github.com/cucumber/cucumber/compare/cucumber-expressions/v11.0.0...cucumber-expressions/v11.0.1
+[11.0.0]:      https://github.com/cucumber/cucumber/compare/cucumber-expressions/v10.3.0...cucumber-expressions/v11.0.0
 [10.3.0]:      https://github.com/cucumber/cucumber/compare/cucumber-expressions/v10.2.2...cucumber-expressions/v10.3.0
 [10.2.2]:      https://github.com/cucumber/cucumber/compare/cucumber-expressions/v0.0.0...cucumber-expressions/v10.2.2
 [0.0.0]:      https://github.com/cucumber/cucumber/compare/cucumber-expressions/v10.2.1...cucumber-expressions/v0.0.0

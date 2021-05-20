@@ -1,13 +1,17 @@
-require 'cucumber/messages/varint'
+require 'json'
 
 module Cucumber
   module Messages
     class NdjsonToMessageEnumerator < Enumerator
       def initialize(io)
         super() do |yielder|
-          io.each_line do |json|
-            next if json.strip.empty?
-            m = Cucumber::Messages::Envelope.from_json(json)
+          io.each_line do |line|
+            next if line.strip.empty?
+            begin
+              m = JSON.parse(line)
+            rescue => e
+              raise "Not JSON: #{line.strip}"
+            end
             yielder.yield(m)
           end
         end

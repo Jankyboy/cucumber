@@ -1,5 +1,5 @@
-import { messages } from '@cucumber/messages'
-import { Query as GherkinQuery } from '@cucumber/gherkin'
+import * as messages from '@cucumber/messages'
+import { Query as GherkinQuery } from '@cucumber/gherkin-utils'
 import TagSearch from '../../src/search/TagSearch'
 import TextSearch from '../../src/search/TextSearch'
 import isTagExpression from '../../src/is_tag_expression'
@@ -12,7 +12,7 @@ export default class Search {
     this.tagSearch = new TagSearch(gherkinQuery)
   }
 
-  public search(query: string): messages.IGherkinDocument[] {
+  public search(query: string): messages.GherkinDocument[] {
     if (isTagExpression(query)) {
       try {
         return this.tagSearch.search(query)
@@ -24,7 +24,7 @@ export default class Search {
     return this.textSearch.search(query)
   }
 
-  public add(gherkinDocument: messages.IGherkinDocument) {
+  public add(gherkinDocument: messages.GherkinDocument) {
     this.tagSearch.add(gherkinDocument)
     this.textSearch.add(gherkinDocument)
   }

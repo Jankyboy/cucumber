@@ -1,70 +1,44 @@
 import React from 'react'
-import {
-  faSearch,
-  faQuestionCircle,
-  faFilter,
-} from '@fortawesome/free-solid-svg-icons'
+import { faSearch, faQuestionCircle, faFilter } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import SearchQueryContext from '../../SearchQueryContext'
-import { messages } from '@cucumber/messages'
 import statusName from '../gherkin/statusName'
+import * as messages from '@cucumber/messages'
+import statuses from './statuses'
 
 interface IProps {
-  queryUpdated: (query: string) => any
-  statusesUpdated: (
-    statuses: messages.TestStepFinished.TestStepResult.Status[]
-  ) => any
-  enabledStatuses: messages.TestStepFinished.TestStepResult.Status[]
-  scenarioCountByStatus: Map<
-    messages.TestStepFinished.TestStepResult.Status,
-    number
-  >
+  statusesUpdated: (statuses: readonly messages.TestStepResultStatus[]) => any
+  enabledStatuses: readonly messages.TestStepResultStatus[]
+  scenarioCountByStatus: Map<messages.TestStepResultStatus, number>
 }
 
 const SearchBar: React.FunctionComponent<IProps> = ({
-  queryUpdated,
   statusesUpdated,
   enabledStatuses,
   scenarioCountByStatus,
 }) => {
   const searchQueryContext = React.useContext(SearchQueryContext)
-  const statuses = [
-    messages.TestStepFinished.TestStepResult.Status.AMBIGUOUS,
-    messages.TestStepFinished.TestStepResult.Status.FAILED,
-    messages.TestStepFinished.TestStepResult.Status.PASSED,
-    messages.TestStepFinished.TestStepResult.Status.PENDING,
-    messages.TestStepFinished.TestStepResult.Status.SKIPPED,
-    messages.TestStepFinished.TestStepResult.Status.UNDEFINED,
-    messages.TestStepFinished.TestStepResult.Status.UNKNOWN,
-  ]
 
-  const updateQueryOnEnter = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      queryUpdated(searchQueryContext.query)
-      event.preventDefault()
-    }
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const formData = new window.FormData(event.currentTarget)
+    searchQueryContext.updateQuery(formData.get('query').toString())
   }
 
   const showFilters =
     scenarioCountByStatus.size > 1 ||
-    scenarioCountByStatus.has(
-      messages.TestStepFinished.TestStepResult.Status.UNKNOWN
-    )
+    scenarioCountByStatus.has(messages.TestStepResultStatus.UNKNOWN)
 
   return (
     <div className="cucumber-search-bar">
-      <form className="cucumber-search-bar-search">
+      <form className="cucumber-search-bar-search" onSubmit={handleSubmit}>
         <input
           type="text"
+          name="query"
           placeholder="Some text or @tags"
-          onKeyPress={updateQueryOnEnter}
-          onChange={(event) => (searchQueryContext.query = event.target.value)}
+          defaultValue={searchQueryContext.query}
         />
-        <button
-          type="submit"
-          onClick={() => queryUpdated(searchQueryContext.query)}
-          value="search"
-        >
+        <button type="submit" value="search">
           <FontAwesomeIcon icon={faSearch} />
         </button>
       </form>
@@ -99,9 +73,7 @@ const SearchBar: React.FunctionComponent<IProps> = ({
                     defaultChecked={enabled}
                     onChange={() => {
                       if (enabledStatuses.includes(status)) {
-                        statusesUpdated(
-                          enabledStatuses.filter((s) => s !== status)
-                        )
+                        statusesUpdated(enabledStatuses.filter((s) => s !== status))
                       } else {
                         statusesUpdated([status].concat(enabledStatuses))
                       }

@@ -1,27 +1,27 @@
-import GherkinStreams from './stream/GherkinStreams'
-import generateMessages from './stream/generateMessages'
-import makeSourceEnvelope from './stream/makeSourceEnvelope'
+import generateMessages from './generateMessages'
+import makeSourceEnvelope from './makeSourceEnvelope'
 import IGherkinOptions from './IGherkinOptions'
-import Query from './Query'
 import Dialect from './Dialect'
 import Parser from './Parser'
 import AstBuilder from './AstBuilder'
 import TokenScanner from './TokenScanner'
 import compile from './pickles/compile'
 import DIALECTS from './gherkin-languages.json'
+import GherkinClassicTokenMatcher from './GherkinClassicTokenMatcher'
+import GherkinInMarkdownTokenMatcher from './GherkinInMarkdownTokenMatcher'
 
 const dialects = DIALECTS as Readonly<{ [key: string]: Dialect }>
 
 export {
-  GherkinStreams,
   generateMessages,
   makeSourceEnvelope,
   IGherkinOptions,
-  Query,
   dialects,
   Dialect,
   Parser,
   AstBuilder,
   TokenScanner,
+  GherkinClassicTokenMatcher,
+  GherkinInMarkdownTokenMatcher,
   compile,
 }

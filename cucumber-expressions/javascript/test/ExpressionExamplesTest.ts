@@ -6,7 +6,7 @@ import ParameterTypeRegistry from '../src/ParameterTypeRegistry'
 
 describe('examples.txt', () => {
   const match = (expressionText: string, text: string) => {
-    const m = /\/(.*)\//.exec(expressionText)
+    const m = /^\/(.*)\/$/.exec(expressionText)
     const expression = m
       ? new RegularExpression(new RegExp(m[1]), new ParameterTypeRegistry())
       : new CucumberExpression(expressionText, new ParameterTypeRegistry())
@@ -22,10 +22,7 @@ describe('examples.txt', () => {
   for (const chunk of chunks) {
     const [expressionText, text, expectedArgs] = chunk.trim().split(/\n/m)
     it(`Works with: ${expressionText}`, () => {
-      assert.deepStrictEqual(
-        JSON.stringify(match(expressionText, text)),
-        expectedArgs
-      )
+      assert.deepStrictEqual(JSON.stringify(match(expressionText, text)), expectedArgs)
     })
   }
 })

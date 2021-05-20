@@ -1,96 +1,59 @@
 import assert from 'assert'
-import { stubObject } from 'ts-sinon'
-import { messages } from '@cucumber/messages'
-import GherkinDocument = messages.GherkinDocument
-import { Query } from '@cucumber/query'
-import { Query as GherkinQuery } from '@cucumber/gherkin'
-import fs from 'fs'
+import * as messages from '@cucumber/messages'
+import { Query as CucumberQuery, Query } from '@cucumber/query'
+import { GherkinStreams } from '@cucumber/gherkin-streams'
+import { Query as GherkinQuery } from '@cucumber/gherkin-utils'
 
 import hidePassedScenarios from '../src/hidePassedScenarios'
-
-function envelopes(ndjson: string): messages.IEnvelope[] {
-  return ndjson
-    .trim()
-    .split('\n')
-    .map((json: string) => messages.Envelope.fromObject(JSON.parse(json)))
-}
+import { runCucumber, SupportCode } from '@cucumber/fake-cucumber'
+import { glob } from 'glob'
+import CucumberQueryStream from './CucumberQueryStream'
 
 describe('hidePassedScenarios', () => {
   it('returns an empty array if no documents are provided', () => {
     const testResultsQuery = new Query()
     const gherkinQuery = new GherkinQuery()
 
-    assert.deepStrictEqual(
-      hidePassedScenarios([], testResultsQuery, gherkinQuery),
-      []
-    )
+    assert.deepStrictEqual(hidePassedScenarios([], testResultsQuery, gherkinQuery), [])
   })
 
-  it('keeps documents which do not have a passed status', () => {
-    const document = new GherkinDocument()
-    const testResultsQuery = stubObject<Query>(new Query())
-    testResultsQuery.getWorstTestStepResult.returns(
-      new messages.TestStepFinished.TestStepResult({
-        status: messages.TestStepFinished.TestStepResult.Status.FAILED,
-      })
+  it('can process multiple documents and statuses', async () => {
+    const supportCode = new SupportCode()
+    // Make one of the scenarios pass so it's filtered out
+    supportCode.defineStepDefinition(
+      {
+        uri: __filename,
+        location: { column: 1, line: 1 },
+      },
+      'I have {int} cukes in my belly',
+      function (cukeCount: number) {
+        assert(cukeCount)
+      }
     )
-    testResultsQuery.getPickleTestStepResults.returns([])
 
-    const gherkinQuery = stubObject<GherkinQuery>(new GherkinQuery())
-    gherkinQuery.getPickleIds.returns([])
-
-    assert.deepStrictEqual(
-      hidePassedScenarios([document], testResultsQuery, gherkinQuery),
-      [document]
-    )
-  })
-
-  it('removes documents which do have a passed status', () => {
-    const document = new GherkinDocument()
-    const testResultsQuery = stubObject<Query>(new Query())
-    testResultsQuery.getWorstTestStepResult.returns(
-      new messages.TestStepFinished.TestStepResult({
-        status: messages.TestStepFinished.TestStepResult.Status.PASSED,
-      })
-    )
-    testResultsQuery.getPickleTestStepResults.returns([])
-
-    const gherkinQuery = stubObject<GherkinQuery>(new GherkinQuery())
-    gherkinQuery.getPickleIds.returns([])
-
-    assert.deepStrictEqual(
-      hidePassedScenarios([document], testResultsQuery, gherkinQuery),
-      []
-    )
-  })
-
-  it('can process multiple documents and statuses', () => {
-    const documentList = fs
-      .readFileSync(__dirname + '/../testdata/all.ndjson')
-      .toString()
-    const messages = envelopes(documentList)
-    const testResultsQuery = new Query()
-    const gherkinQuery = new GherkinQuery()
-    messages.map((message) => {
-      gherkinQuery.update(message)
-      testResultsQuery.update(message)
+    const featureFiles = glob
+      .sync('../../compatibility-kit/javascript/features/**/*.feature')
+      .sort()
+    const gherkinStream = GherkinStreams.fromPaths(featureFiles, {
+      newId: messages.IdGenerator.incrementing(),
     })
+    const gherkinQuery = new GherkinQuery()
+    const cucumberQuery = new CucumberQuery()
 
-    const documents = messages
-      .filter((message) => message.gherkinDocument)
-      .map((m) => m.gherkinDocument)
+    const cucumberQueryStream = new CucumberQueryStream(cucumberQuery)
+    await runCucumber(supportCode, gherkinStream, gherkinQuery, cucumberQueryStream)
 
+    const gherkinDocuments = gherkinQuery.getGherkinDocuments()
+
+    const expectedFeatureFiles = featureFiles.filter(
+      (path) => path !== '../../compatibility-kit/javascript/features/minimal/minimal.feature'
+    )
+    assert.notDeepStrictEqual(featureFiles, expectedFeatureFiles)
     assert.deepStrictEqual(
-      hidePassedScenarios(documents, testResultsQuery, gherkinQuery)
+      hidePassedScenarios(gherkinDocuments, cucumberQuery, gherkinQuery)
         .map((document) => document.uri)
         .sort(),
-      [
-        'testdata/escaped_pipes.feature',
-        'testdata/hooks.feature',
-        'testdata/rules.feature',
-        'testdata/statuses.feature',
-        'testdata/test.feature',
-      ]
+      expectedFeatureFiles
     )
   })
 })

@@ -2,10 +2,9 @@ import React from 'react'
 import Tags from './Tags'
 import Description from './Description'
 import Examples from './Examples'
-import { messages } from '@cucumber/messages'
+import * as messages from '@cucumber/messages'
 import StepList from './StepList'
 import HookList from './HookList'
-import IScenario = messages.GherkinDocument.Feature.IScenario
 import IdGenerator from '../../IdGenerator'
 import ScenarioTitle from './ScenarioTitle'
 import CucumberQueryContext from '../../CucumberQueryContext'
@@ -13,7 +12,7 @@ import GherkinQueryContext from '../../GherkinQueryContext'
 import UriContext from '../../UriContext'
 
 interface IProps {
-  scenario: IScenario
+  scenario: messages.Scenario
 }
 
 const generator = new IdGenerator()
@@ -34,13 +33,15 @@ const Scenario: React.FunctionComponent<IProps> = ({ scenario }) => {
       <Tags tags={scenario.tags} />
       <ScenarioTitle id={idGenerated} scenario={scenario} />
       <Description description={scenario.description} />
-      <HookList hookSteps={beforeHooks} />
-      <StepList
-        steps={scenario.steps || []}
-        renderStepMatchArguments={!hasExamples}
-        renderMessage={!hasExamples}
-      />
-      <HookList hookSteps={afterHooks} />
+      <ol className="cucumber-steps">
+        <HookList hookSteps={beforeHooks} />
+        <StepList
+          steps={scenario.steps || []}
+          renderStepMatchArguments={!hasExamples}
+          renderMessage={!hasExamples}
+        />
+        <HookList hookSteps={afterHooks} />
+      </ol>
 
       {examplesList.map((examples, index) => (
         <Examples key={index} examples={examples} />

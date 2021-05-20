@@ -1,10 +1,10 @@
-import { CucumberExpressionError } from './Errors'
+import CucumberExpressionError from './CucumberExpressionError'
 
 const ILLEGAL_PARAMETER_NAME_PATTERN = /([[\]()$.|?*+])/
 const UNESCAPE_PATTERN = () => /(\\([[$.|?*+\]]))/g
 
 export default class ParameterType<T> {
-  private transformFn: (...match: ReadonlyArray<string>) => T
+  private transformFn: (...match: readonly string[]) => T
 
   public static compare(pt1: ParameterType<any>, pt2: ParameterType<any>) {
     if (pt1.preferForRegexpMatch && !pt2.preferForRegexpMatch) {
@@ -17,16 +17,19 @@ export default class ParameterType<T> {
   }
 
   public static checkParameterTypeName(typeName: string) {
-    const unescapedTypeName = typeName.replace(UNESCAPE_PATTERN(), '$2')
-    const match = unescapedTypeName.match(ILLEGAL_PARAMETER_NAME_PATTERN)
-    if (match) {
+    if (!this.isValidParameterTypeName(typeName)) {
       throw new CucumberExpressionError(
-        `Illegal character '${match[1]}' in parameter name {${unescapedTypeName}}`
+        `Illegal character in parameter name {${typeName}}. Parameter names may not contain '{', '}', '(', ')', '\\' or '/'`
       )
     }
   }
 
-  public regexpStrings: ReadonlyArray<string>
+  public static isValidParameterTypeName(typeName: string) {
+    const unescapedTypeName = typeName.replace(UNESCAPE_PATTERN(), '$2')
+    return !unescapedTypeName.match(ILLEGAL_PARAMETER_NAME_PATTERN)
+  }
+
+  public regexpStrings: readonly string[]
 
   /**
    * @param name {String} the name of the type
@@ -38,14 +41,14 @@ export default class ParameterType<T> {
    */
   constructor(
     public readonly name: string,
-    regexps: ReadonlyArray<RegExp> | ReadonlyArray<string> | RegExp | string,
+    regexps: readonly RegExp[] | readonly string[] | RegExp | string,
     private readonly type: any,
     transform: (...match: string[]) => T,
     public readonly useForSnippets: boolean,
     public readonly preferForRegexpMatch: boolean
   ) {
     if (transform === undefined) {
-      transform = (s) => (s as unknown) as T
+      transform = (s) => s as unknown as T
     }
     if (useForSnippets === undefined) {
       this.useForSnippets = true
@@ -67,13 +70,12 @@ export default class ParameterType<T> {
   }
 }
 
-function stringArray(
-  regexps: ReadonlyArray<RegExp> | ReadonlyArray<string> | RegExp | string
-): string[] {
-  const array = Array.isArray(regexps) ? regexps : [regexps]
-  return array.map((r: RegExp | string) =>
-    r instanceof RegExp ? regexpSource(r) : r
-  )
+type StringOrRegexp = string | RegExp
+
+function stringArray(regexps: readonly StringOrRegexp[] | StringOrRegexp): string[] {
+  // @ts-ignore
+  const array: StringOrRegexp[] = Array.isArray(regexps) ? regexps : [regexps]
+  return array.map((r) => (r instanceof RegExp ? regexpSource(r) : r))
 }
 
 function regexpSource(regexp: RegExp): string {
@@ -81,9 +83,7 @@ function regexpSource(regexp: RegExp): string {
 
   for (const flag of ['g', 'i', 'm', 'y']) {
     if (flags.indexOf(flag) !== -1) {
-      throw new CucumberExpressionError(
-        `ParameterType Regexps can't use flag '${flag}'`
-      )
+      throw new CucumberExpressionError(`ParameterType Regexps can't use flag '${flag}'`)
     }
   }
   return regexp.source

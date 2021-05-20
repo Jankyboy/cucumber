@@ -1,13 +1,12 @@
 import React from 'react'
 import Description from './Description'
-import { messages } from '@cucumber/messages'
+import * as messages from '@cucumber/messages'
 import StepList from './StepList'
 import IdGenerator from '../../IdGenerator'
 import BackgroundTitle from './BackgroundTitle'
-import IBackground = messages.GherkinDocument.Feature.IBackground
 
 interface IProps {
-  background: IBackground
+  background: messages.Background
 }
 
 const generator = new IdGenerator()
@@ -19,11 +18,13 @@ const Background: React.FunctionComponent<IProps> = ({ background }) => {
     <section className="cucumber-background">
       <BackgroundTitle id={idGenerated} background={background} />
       <Description description={background.description} />
-      <StepList
-        steps={background.steps || []}
-        renderStepMatchArguments={true}
-        renderMessage={true}
-      />
+      <ol className="cucumber-steps">
+        <StepList
+          steps={background.steps || []}
+          renderStepMatchArguments={true}
+          renderMessage={true}
+        />
+      </ol>
     </section>
   )
 }
